@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cổ Tiên Lộ Auto</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div>
+        <p class="eyebrow">TRỢ LÝ PHÓ BẢN</p>
+        <h1>Cổ Tiên Lộ Auto</h1>
+      </div>
+      <span id="connection" class="status offline">Ngoại tuyến</span>
+    </header>
+
+    <section class="hero card">
+      <div class="hero-row">
+        <div>
+          <p class="muted">Trạng thái</p>
+          <strong id="status">Đang kiểm tra...</strong>
+        </div>
+        <button id="toggle" class="switch" aria-label="Bật hoặc tắt tự động"><span></span></button>
+      </div>
+      <p id="detail" class="muted">Mở cotienlo.com để bắt đầu.</p>
+    </section>
+
+    <section class="card">
+      <div class="section-title"><h2>Cấu hình phó bản</h2><span class="badge">AN TOÀN</span></div>
+      <label>Phó bản<select id="dungeon"><option value="">Đang tải danh sách...</option></select></label>
+      <label>Số lượt chạy<select id="runs"><option value="one">Một lượt</option><option value="all">Tất cả lượt còn lại</option></select></label>
+      <label>Thời gian chờ giữa lượt <span><b id="delayValue">3</b> giây</span><input id="delay" type="range" min="1" max="10" value="3"></label>
+    </section>
+
+    <section class="card options">
+      <div class="section-title"><h2>Tùy chọn an toàn</h2></div>
+      <label class="check"><input id="collectRewards" type="checkbox" checked><span>Tự nhận phần thưởng</span></label>
+      <label class="check"><input id="stopOnNoEnergy" type="checkbox" checked><span>Dừng khi hết thể lực</span></label>
+      <label class="check"><input id="stopOnError" type="checkbox" checked><span>Dừng khi gặp lỗi</span></label>
+      <label class="check disabled"><input id="allowItems" type="checkbox"><span>Cho phép dùng vật phẩm</span></label>
+      <label class="check disabled"><input id="allowPremium" type="checkbox"><span>Cho phép dùng kim nguyên bảo</span></label>
+    </section>
+
+    <button id="run" class="primary">BẮT ĐẦU CHẠY PHÓ BẢN</button>
+
+    <section class="card progress">
+      <div class="section-title"><h2>Nhật ký gần đây</h2><button id="clear" class="link">Xóa</button></div>
+      <ul id="logs"><li class="muted">Chưa có hoạt động.</li></ul>
+    </section>
+    <p class="footer">Chỉ thao tác khi bạn chủ động bấm bắt đầu.</p>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

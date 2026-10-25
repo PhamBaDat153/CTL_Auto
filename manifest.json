@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Cổ Tiên Lộ Auto",
+  "version": "0.1.0",
+  "description": "Trợ lý tiếng Việt cho các thao tác phó bản trên Cổ Tiên Lộ.",
+  "permissions": ["storage", "tabs"],
+  "host_permissions": ["https://cotienlo.com/*"],
+  "action": {
+    "default_title": "Cổ Tiên Lộ Auto",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://cotienlo.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
