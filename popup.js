@@ -1,77 +1,14 @@
-const $ = (id) => document.getElementById(id);
-const defaults = { enabled: false, dungeon: "auto", runs: "one", collectRewards: true, stopOnNoEnergy: true, stopOnError: true, allowItems: false, allowPremium: false, delaySeconds: 3 };
-let settings = { ...defaults };
-let tabId = null;
-
-async function load() {
-  const stored = await chrome.storage.local.get(["settings", "logs"]);
-  settings = { ...defaults, ...(stored.settings || {}) };
-  renderSettings();
-  renderLogs(stored.logs || []);
-  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-  tabId = tabs[0]?.id;
-  if (!tabs[0]?.url?.startsWith("https://cotienlo.com/")) return setConnection(false, "Hãy mở cotienlo.com");
-  chrome.tabs.sendMessage(tabId, { type: "TRANG_THAI" }, (state) => {
-    if (chrome.runtime.lastError) return setConnection(false, "Chưa kết nối trang game");
-    setConnection(true, state?.message || "Đã kết nối");
-    loadDungeons();
-  });
-}
-
-function loadDungeons() {
-  if (!tabId) return;
-  chrome.tabs.sendMessage(tabId, { type: "DANH_SACH_PHOBAN" }, (result) => {
-    if (chrome.runtime.lastError) return;
-    const select = $("dungeon");
-    const dungeons = result?.dungeons || [];
-    select.innerHTML = dungeons.length
-      ? dungeons.map((dungeon) => `<option value="${escapeHtml(dungeon.id)}">${escapeHtml(dungeon.name)}</option>`).join("")
-      : '<option value="">Chưa tìm thấy phó bản</option>';
-    if (settings.dungeon && dungeons.some((dungeon) => dungeon.id === settings.dungeon)) select.value = settings.dungeon;
-    else if (dungeons[0]) { settings.dungeon = dungeons[0].id; save(); }
-  });
-}
-
-function renderSettings() {
-  $("toggle").classList.toggle("active", settings.enabled);
-  $("status").textContent = settings.enabled ? "Sẵn sàng tự động" : "Tự động đang tắt";
-  $("runs").value = settings.runs;
-  $("delay").value = settings.delaySeconds;
-  $("delayValue").textContent = settings.delaySeconds;
-  ["collectRewards", "stopOnNoEnergy", "stopOnError", "allowItems", "allowPremium"].forEach((id) => $(id).checked = settings[id]);
-}
-
-function setConnection(connected, message) {
-  $("connection").textContent = connected ? "Đã kết nối" : "Ngoại tuyến";
-  $("connection").className = `status ${connected ? "online" : "offline"}`;
-  $("detail").textContent = message;
-}
-
-function renderLogs(logs) {
-  $("logs").innerHTML = logs.length ? logs.map((log) => `<li><span>${log.time}</span>${escapeHtml(log.message)}</li>`).join("") : '<li class="muted">Chưa có hoạt động.</li>';
-}
-
-function escapeHtml(value) { return String(value).replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char])); }
-async function save() { await chrome.storage.local.set({ settings }); }
-
-$("toggle").addEventListener("click", async () => { settings.enabled = !settings.enabled; await save(); renderSettings(); });
-$("runs").addEventListener("change", async (event) => { settings.runs = event.target.value; await save(); });
-$("dungeon").addEventListener("change", async (event) => { settings.dungeon = event.target.value; await save(); });
-$("delay").addEventListener("input", async (event) => { settings.delaySeconds = Number(event.target.value); $("delayValue").textContent = settings.delaySeconds; await save(); });
-["collectRewards", "stopOnNoEnergy", "stopOnError", "allowItems", "allowPremium"].forEach((id) => $(id).addEventListener("change", async (event) => { settings[id] = event.target.checked; await save(); }));
-
-$("run").addEventListener("click", () => {
-  if (!tabId) return setConnection(false, "Không tìm thấy tab game");
-  $("run").disabled = true;
-  $("run").textContent = "ĐANG CHẠY...";
-  chrome.tabs.sendMessage(tabId, { type: "CHAY_PHOBAN", settings }, (result) => {
-    $("run").disabled = false;
-    $("run").textContent = "BẮT ĐẦU CHẠY PHÓ BẢN";
-    if (chrome.runtime.lastError) return setConnection(false, "Không thể kết nối trang game");
-    setConnection(true, result?.message || "Đã hoàn tất");
-    load();
-  });
-});
-
-$("clear").addEventListener("click", async () => { await chrome.storage.local.set({ logs: [] }); renderLogs([]); });
-load();
+const $ = s => document.querySelector(s), actions = $('#actions');
+const defaults = { actions: [{type:'key', key:'F', mode:'press', hold:1, holdUnit:'s', delay:500, delayUnit:'ms'}], loopMode:'once', loopCount:10 };
+const units = '<option value="ms">mili giây</option><option value="s">giây</option><option value="m">phút</option>';
+function updateCount(){ $('#action-count').textContent=`${actions.children.length} thao tác`;[...actions.children].forEach((e,i)=>e.querySelector('b').textContent=`Thao tác ${i+1}`) }
+function card(a={}, i){ const el=document.createElement('div'); el.className='action'; el.innerHTML=`<b>Thao tác ${i+1}</b><button class="remove">Xóa</button><div class="row type-row"><label>Loại thao tác<select class="type"><option value="key">Bàn phím</option><option value="mouse">Chuột</option></select></label></div><div class="details"></div><div class="row"><label>Trễ sau thao tác<input class="delay" type="number" min="0" step="any" value="${a.delay??500}"></label><label>Đơn vị<select class="delayUnit">${units}</select></label></div>`; el.querySelector('.type').value=a.type||'key'; el.querySelector('.delayUnit').value=a.delayUnit||'ms'; el.querySelector('.remove').onclick=()=>{el.remove();updateCount()}; el.querySelector('.type').onchange=()=>renderDetails(el,{}); renderDetails(el,a); actions.append(el); updateCount() }
+function renderDetails(el,a){ const d=el.querySelector('.details'); if(el.querySelector('.type').value==='key') d.innerHTML=`<div class="row"><label>Phím<input class="key" value="${a.key||'F'}" maxlength="20"></label><label>Chế độ<select class="mode"><option value="press">Nhấn</option><option value="hold">Giữ</option></select></label></div><div class="row hold-row"><label>Thời gian giữ<input class="hold" type="number" min="0" step="any" value="${a.hold??1}"></label><label>Đơn vị<select class="holdUnit">${units}</select></label></div>`; else d.innerHTML=`<div class="row"><label>Nút chuột<select class="button"><option value="left">Trái</option><option value="right">Phải</option><option value="middle">Giữa</option></select></label><label>X<input class="x" type="number" value="${a.x??0}"></label><label>Y<input class="y" type="number" value="${a.y??0}"></label></div><button class="pick">Chọn vị trí trên trang</button>`; if(a.mode)el.querySelector('.mode').value=a.mode;if(a.holdUnit)el.querySelector('.holdUnit').value=a.holdUnit;if(a.button)el.querySelector('.button').value=a.button; if(el.querySelector('.pick'))el.querySelector('.pick').onclick=pick; }
+function data(){return [...actions.children].map(e=>{const a={type:e.querySelector('.type').value,delay:+e.querySelector('.delay').value||0,delayUnit:e.querySelector('.delayUnit').value};if(a.type==='key'){a.key=e.querySelector('.key').value||'F';a.mode=e.querySelector('.mode').value;a.hold=+e.querySelector('.hold').value||0;a.holdUnit=e.querySelector('.holdUnit').value}else{a.button=e.querySelector('.button').value;a.x=+e.querySelector('.x').value||0;a.y=+e.querySelector('.y').value||0}return a})}
+function setStatus(text, className){const el=$('#status');el.textContent=text;el.className=`status ${className}`}
+async function save(){await chrome.storage.local.set({config:{actions:data(),loopMode:$('#loop-mode').value,loopCount:+$('#loop-count').value||1}});setStatus('Đã lưu','ready');setTimeout(()=>setStatus('Sẵn sàng','ready'),1000)}
+const config=()=>({actions:data(),loopMode:$('#loop-mode').value,loopCount:+$('#loop-count').value||1});
+async function send(command){const [tab]=await chrome.tabs.query({active:true,currentWindow:true});if(!tab?.id)return;try{await chrome.tabs.sendMessage(tab.id,{command,config:config()})}catch(e){await chrome.scripting.executeScript({target:{tabId:tab.id},files:['content.js']});await chrome.tabs.sendMessage(tab.id,{command,config:config()})}setStatus(command==='start'?'Đang chạy':'Đã dừng',command==='start'?'running':'stopped')}
+async function pick(){const [tab]=await chrome.tabs.query({active:true,currentWindow:true});if(tab?.id)chrome.tabs.sendMessage(tab.id,{command:'pick'});}
+$('#add-key').onclick=()=>card();$('#add-mouse').onclick=()=>{card({type:'mouse'});};$('#save').onclick=save;$('#start').onclick=()=>send('start');$('#stop').onclick=()=>send('stop');$('#loop-mode').onchange=()=>$('#count-wrap').style.display=$('#loop-mode').value==='count'?'inline-block':'none';
+chrome.storage.local.get(['config','picked'],r=>{const c=r.config||defaults;actions.innerHTML='';c.actions.forEach(card);$('#loop-mode').value=c.loopMode;$('#loop-count').value=c.loopCount;$('#loop-mode').onchange();if(r.picked){const last=[...actions.children].reverse().find(e=>e.querySelector('.type').value==='mouse');if(last){last.querySelector('.x').value=r.picked.x;last.querySelector('.y').value=r.picked.y}chrome.storage.local.remove('picked')}});
