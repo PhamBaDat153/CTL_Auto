@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Run configurable keyboard and mouse sequences on webpages.",
   "permissions": ["storage", "activeTab", "scripting"],
-  "action": { "default_popup": "popup.html" },
+  "action": { "default_popup": "popup.html", "default_title": "Mở CTL Auto" },
   "background": { "service_worker": "background.js" },
   "content_scripts": [{
     "matches": ["<all_urls>"],
