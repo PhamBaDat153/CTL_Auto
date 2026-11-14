@@ -1,14 +1,114 @@
-<!doctype html>
-<html lang="vi"><head><meta charset="utf-8"><title>CTL Auto</title><link rel="stylesheet" href="popup.css"></head>
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <title>Cổ Tiên Lộ Auto</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
 <body>
-  <header><h1>CTL Auto</h1><div id="status" class="status ready">Sẵn sàng</div><p class="hint">Thực hiện chuỗi thao tác theo thứ tự. Nhấn <b>Esc</b> trên trang để dừng.</p></header>
-  <section><div class="section-title"><h2>Danh sách thao tác</h2><span id="action-count">0 thao tác</span></div><div id="actions"></div>
-    <div class="toolbar"><button id="add-key">＋ Thêm phím</button><button id="add-mouse">＋ Thêm chuột</button></div>
-  </section>
-  <fieldset><legend>Lặp lại</legend>
-    <label>Chế độ<select id="loop-mode"><option value="once">Một lần</option><option value="count">Số lần cố định</option><option value="infinite">Vô hạn</option></select></label>
-    <label id="count-wrap">Số lần<input id="loop-count" type="number" min="1" value="10"></label>
-  </fieldset>
-  <div class="controls"><button id="save">Lưu cấu hình</button><div class="main-buttons"><button id="start">Bắt đầu</button><button id="stop">Dừng</button></div></div>
-  <script src="popup.js"></script>
-</body></html>
+<header>
+    <div class="brand"><img src="logo.png" alt="Logo Cổ Tiên Lộ Auto"><h1>Cổ Tiên Lộ Auto</h1></div>
+
+    <div id="status" class="status ready">
+        Sẵn sàng
+    </div>
+
+    <p class="hint">
+        Thực hiện chuỗi thao tác theo thứ tự.
+        Nhấn <b>Esc</b> trên trang để dừng.
+    </p>
+</header>
+
+<section class="profiles">
+    <div class="section-title">
+        <h2>Cấu hình</h2>
+    </div>
+
+    <select id="profile-select"></select>
+
+    <div class="profile-actions">
+        <button id="rename-profile">✎ Đổi tên</button>
+        <button id="new-profile-top">＋ Tạo mới</button>
+        <button id="delete-profile-top">🗑 Xóa</button>
+    </div>
+
+    <button id="manage-profiles" hidden></button>
+</section>
+
+<section>
+    <div class="section-title">
+        <h2>Danh sách thao tác</h2>
+        <span id="action-count">0 thao tác</span>
+    </div>
+
+    <div id="actions"></div>
+
+    <div class="toolbar">
+        <button id="add-key">＋ Thêm phím</button>
+        <button id="add-mouse">＋ Thêm chuột</button>
+    </div>
+</section>
+
+<fieldset>
+    <legend>Lặp lại</legend>
+
+    <label>
+        Chế độ
+        <select id="loop-mode">
+            <option value="once">Một lần</option>
+            <option value="count">Số lần cố định</option>
+            <option value="infinite">Vô hạn</option>
+        </select>
+    </label>
+
+    <label id="count-wrap">
+        Số lần
+        <input
+                id="loop-count"
+                type="number"
+                min="1"
+                value="10"
+        >
+    </label>
+</fieldset>
+
+<div class="controls">
+    <button id="save">Lưu cấu hình</button>
+
+    <div class="main-buttons">
+        <button id="start">Bắt đầu</button>
+        <button id="stop">Dừng</button>
+    </div>
+</div>
+
+<dialog id="profile-dialog">
+    <h2>Quản lý cấu hình</h2>
+
+    <div id="profile-list"></div>
+
+    <div class="rename-form" hidden>
+        <label>
+            Tên cấu hình
+            <input
+                    id="profile-name-input"
+                    maxlength="60"
+            >
+        </label>
+
+        <div>
+            <button id="cancel-rename">Hủy</button>
+            <button id="confirm-rename">Lưu tên</button>
+        </div>
+    </div>
+
+    <div class="dialog-actions">
+        <button id="new-profile">＋ Tạo mới</button>
+        <button id="close-profiles">Đóng</button>
+    </div>
+</dialog>
+
+<script src="popup.js"></script>
+</body>
+</html>

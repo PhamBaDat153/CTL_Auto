@@ -1,4 +1,4 @@
-# CTL Auto
+# Cổ Tiên Lộ Auto
 
 Load this folder in Chrome at `chrome://extensions` with **Developer mode** enabled and **Load unpacked**.
 

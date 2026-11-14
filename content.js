@@ -1,12 +1,514 @@
-(()=>{let stopped=true,held=new Set(),picker,marker,panel;
-chrome.storage.local.set({runStatus:'stopped'});
-const ms=(v,u)=>v*({ms:1,s:1000,m:60000}[u]||1), wait=t=>new Promise(r=>{const id=setInterval(()=>{if(stopped){clearInterval(id);r()}},25);setTimeout(()=>{clearInterval(id);r()},Math.max(0,t))});
-const keyInfo=key=>{const k=key.length===1?key.toUpperCase():key;const codes={ ' ':'Space','Space':'Space','Enter':'Enter','Tab':'Tab','Escape':'Escape','Esc':'Escape','ArrowUp':'ArrowUp','ArrowDown':'ArrowDown','ArrowLeft':'ArrowLeft','ArrowRight':'ArrowRight','Shift':'ShiftLeft','Control':'ControlLeft','Ctrl':'ControlLeft','Alt':'AltLeft','Backspace':'Backspace','Delete':'Delete','Home':'Home','End':'End','PageUp':'PageUp','PageDown':'PageDown'};return {key:key===' ' ? ' ':k,code:codes[k]||(k.length===1?(/[0-9]/.test(k)?'Digit'+k:'Key'+k):k)} };
-function keyEvent(type,key){const info=keyInfo(key), target=document.activeElement||document.body;const e=new KeyboardEvent(type,{key:info.key,code:info.code,bubbles:true,cancelable:true,composed:true});target.dispatchEvent(e)}
-function mouseClick(x,y,button){const target=document.elementFromPoint(x,y)||document.querySelector('#game canvas')||document.querySelector('#game')||document.body;const options={bubbles:true,cancelable:true,composed:true,view:window,clientX:x,clientY:y,button,buttons:button===0?1:0,pointerId:1,pointerType:'mouse',isPrimary:true};if(typeof PointerEvent==='function'){target.dispatchEvent(new PointerEvent('pointerover',options));target.dispatchEvent(new PointerEvent('pointermove',options));target.dispatchEvent(new PointerEvent('pointerdown',options))}target.dispatchEvent(new MouseEvent('mouseover',options));target.dispatchEvent(new MouseEvent('mousemove',options));target.dispatchEvent(new MouseEvent('mousedown',options));if(typeof PointerEvent==='function')target.dispatchEvent(new PointerEvent('pointerup',options));target.dispatchEvent(new MouseEvent('mouseup',options));if(button===2)target.dispatchEvent(new MouseEvent('contextmenu',options));else if(button===1)target.dispatchEvent(new MouseEvent('auxclick',options));else target.dispatchEvent(new MouseEvent('click',options))}
-async function run(c){stopped=false;let n=0;while(!stopped&&(c.loopMode==='infinite'||n<(c.loopMode==='count'?c.loopCount:1))){for(const a of c.actions){if(stopped)break;if(a.type==='key'){keyEvent('keydown',a.key);if(a.mode==='hold')await wait(ms(a.hold,a.holdUnit));keyEvent('keyup',a.key)}else mouseClick(a.x,a.y,{left:0,middle:1,right:2}[a.button]??0);await wait(ms(a.delay,a.delayUnit))}n++}held.forEach(k=>keyEvent('keyup',k));held.clear()}
-function stop(){stopped=true} function pick(){picker?.remove();picker=document.createElement('div');Object.assign(picker.style,{position:'fixed',inset:0,zIndex:2147483647,cursor:'crosshair',background:'transparent'});const guide=document.createElement('div');Object.assign(guide.style,{position:'fixed',top:'12px',left:'50%',transform:'translateX(-50%)',padding:'8px 12px',background:'#e3f2fd',border:'1px solid #90caf9',color:'#0d47a1',borderRadius:'5px',font:'bold 12px Arial',pointerEvents:'none'});guide.textContent='Di chuyển chuột và click để chọn vị trí — Esc để hủy';picker.append(guide);picker.onclick=e=>{e.preventDefault();const x=e.clientX,y=e.clientY;picker.remove();picker=null;marker?.remove();marker=document.createElement('div');Object.assign(marker.style,{position:'fixed',left:`${x-9}px`,top:`${y-9}px`,width:'18px',height:'18px',border:'3px solid #1976d2',borderRadius:'50%',background:'rgba(25,118,210,.2)',zIndex:2147483646,pointerEvents:'none'});document.body.append(marker);chrome.runtime.sendMessage({picked:{x,y}});if(panel)panel.querySelector('.coords').textContent=`Đã lưu: X ${x}, Y ${y}`};document.body.append(picker)}
-function showPanel(){if(panel){panel.remove();panel=null;return}panel=document.createElement('div');panel.innerHTML='<b>CTL Auto</b><button class="close">×</button><div class="panel-help">Bảng nổi trên trang</div><button class="choose">Chọn vị trí click</button><div class="coords">Chưa chọn tọa độ</div>';Object.assign(panel.style,{position:'fixed',top:'16px',right:'16px',width:'190px',padding:'12px',zIndex:2147483646,background:'#fff',border:'1px solid #d7dce2',borderRadius:'7px',boxShadow:'0 3px 14px #0003',font:'12px Arial',color:'#17202a'});panel.querySelector('.close').onclick=()=>{panel.remove();panel=null};panel.querySelector('.choose').onclick=pick;panel.querySelector('.close').style.cssText='float:right;border:0;background:none;font-size:18px;cursor:pointer';panel.querySelector('.choose').style.cssText='width:100%;padding:7px;margin:8px 0;border:1px solid #1976d2;border-radius:4px;background:#1976d2;color:white;cursor:pointer';panel.querySelector('.panel-help').style.cssText='color:#65707c;margin-top:8px';panel.querySelector('.coords').className='coords';document.body.append(panel)}
- function toast(text,kind){let el=document.getElementById('ctl-auto-toast');if(!el){el=document.createElement('div');el.id='ctl-auto-toast';document.documentElement.append(el)}el.textContent=`CTL Auto: ${text}`;el.className=kind;clearTimeout(el._timer);el._timer=setTimeout(()=>el.remove(),1800)}
- document.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();stop();picker?.remove();picker=null}if(e.key==='Shift'&&!e.repeat){e.preventDefault();if(stopped){chrome.storage.local.get('config',r=>{if(r.config){run(r.config);toast('Đang chạy','running')}})}else{stop();toast('Đã dừng','stopped')}}});chrome.runtime.onMessage.addListener(m=>{if(m.command==='toggle-panel')showPanel();if(m.command==='start'){run(m.config);toast('Đang chạy','running')}if(m.command==='stop'){stop();toast('Đã dừng','stopped')}if(m.command==='toggle'){if(stopped){run(m.config);toast('Đang chạy','running')}else{stop();toast('Đã dừng','stopped')}}if(m.command==='pick')pick()});
+
+// ==============================
+// CONTENT SCRIPT - CTL AUTO
+// ==============================
+
+(() => {
+
+    // ==============================
+    // GLOBAL VARIABLES
+    // ==============================
+
+    let stopped = true;
+    let held = new Set();
+    let picker, marker, panel;
+
+    chrome.storage.local.set({
+        runStatus: 'stopped'
+    });
+
+
+    // ==============================
+    // TIME UTILITIES
+    // ==============================
+
+    const ms = (v, u) =>
+        v * ({
+            ms: 1,
+            s: 1000,
+            m: 60000
+        }[u] || 1);
+
+
+    const wait = t => new Promise(r => {
+        const id = setInterval(() => {
+            if (stopped) {
+                clearInterval(id);
+                r();
+            }
+        }, 25);
+
+        setTimeout(() => {
+            clearInterval(id);
+            r();
+        }, Math.max(0, t));
+    });
+
+
+    // ==============================
+    // KEYBOARD UTILITIES
+    // ==============================
+
+    const keyInfo = key => {
+        const k = key.length === 1
+            ? key.toUpperCase()
+            : key;
+
+        const codes = {
+            ' ': 'Space',
+            'Space': 'Space',
+            'Enter': 'Enter',
+            'Tab': 'Tab',
+            'Escape': 'Escape',
+            'Esc': 'Escape',
+
+            'ArrowUp': 'ArrowUp',
+            'ArrowDown': 'ArrowDown',
+            'ArrowLeft': 'ArrowLeft',
+            'ArrowRight': 'ArrowRight',
+
+            'Shift': 'ShiftLeft',
+            'Control': 'ControlLeft',
+            'Ctrl': 'ControlLeft',
+            'Alt': 'AltLeft',
+
+            'Backspace': 'Backspace',
+            'Delete': 'Delete',
+            'Home': 'Home',
+            'End': 'End',
+            'PageUp': 'PageUp',
+            'PageDown': 'PageDown'
+        };
+
+        return {
+            key: key === ' ' ? ' ' : k,
+
+            code: codes[k] || (
+                k.length === 1
+                    ? (/[0-9]/.test(k) ? 'Digit' + k : 'Key' + k)
+                    : k
+            )
+        };
+    };
+
+
+    function keyEvent(type, key) {
+        const info = keyInfo(key);
+
+        const target =
+            document.activeElement || document.body;
+
+        const e = new KeyboardEvent(type, {
+            key: info.key,
+            code: info.code,
+            bubbles: true,
+            cancelable: true,
+            composed: true
+        });
+
+        target.dispatchEvent(e);
+    }
+
+
+    // ==============================
+    // MOUSE UTILITIES
+    // ==============================
+
+    function mouseClick(x, y, button) {
+        const target =
+            document.elementFromPoint(x, y) ||
+            document.querySelector('#game canvas') ||
+            document.querySelector('#game') ||
+            document.body;
+
+        const options = {
+            bubbles: true,
+            cancelable: true,
+            composed: true,
+            view: window,
+            clientX: x,
+            clientY: y,
+            button,
+            buttons: button === 0 ? 1 : 0,
+            pointerId: 1,
+            pointerType: 'mouse',
+            isPrimary: true
+        };
+
+        if (typeof PointerEvent === 'function') {
+            target.dispatchEvent(
+                new PointerEvent('pointerover', options)
+            );
+
+            target.dispatchEvent(
+                new PointerEvent('pointermove', options)
+            );
+
+            target.dispatchEvent(
+                new PointerEvent('pointerdown', options)
+            );
+        }
+
+        target.dispatchEvent(
+            new MouseEvent('mouseover', options)
+        );
+
+        target.dispatchEvent(
+            new MouseEvent('mousemove', options)
+        );
+
+        target.dispatchEvent(
+            new MouseEvent('mousedown', options)
+        );
+
+        if (typeof PointerEvent === 'function') {
+            target.dispatchEvent(
+                new PointerEvent('pointerup', options)
+            );
+        }
+
+        target.dispatchEvent(
+            new MouseEvent('mouseup', options)
+        );
+
+        if (button === 2) {
+            target.dispatchEvent(
+                new MouseEvent('contextmenu', options)
+            );
+        } else if (button === 1) {
+            target.dispatchEvent(
+                new MouseEvent('auxclick', options)
+            );
+        } else {
+            target.dispatchEvent(
+                new MouseEvent('click', options)
+            );
+        }
+    }
+
+
+    // ==============================
+    // AUTOMATION ENGINE
+    // ==============================
+
+    async function run(c) {
+        stopped = false;
+
+        let n = 0;
+
+        while (
+            !stopped &&
+            (
+                c.loopMode === 'infinite' ||
+                n < (
+                    c.loopMode === 'count'
+                        ? c.loopCount
+                        : 1
+                )
+            )
+            ) {
+            for (const a of c.actions) {
+                if (stopped) break;
+
+                if (a.type === 'key') {
+                    keyEvent('keydown', a.key);
+
+                    if (a.mode === 'hold') {
+                        await wait(ms(a.hold, a.holdUnit));
+                    }
+
+                    keyEvent('keyup', a.key);
+
+                } else {
+                    mouseClick(
+                        a.x,
+                        a.y,
+                        {
+                            left: 0,
+                            middle: 1,
+                            right: 2
+                        }[a.button] ?? 0
+                    );
+                }
+
+                await wait(ms(a.delay, a.delayUnit));
+            }
+
+            n++;
+        }
+
+        held.forEach(k => keyEvent('keyup', k));
+        held.clear();
+    }
+
+
+    // ==============================
+    // STOP AUTOMATION
+    // ==============================
+
+    function stop() {
+        stopped = true;
+    }
+
+
+    // ==============================
+    // POSITION PICKER
+    // ==============================
+
+    function pick() {
+        picker?.remove();
+
+        picker = document.createElement('div');
+
+        Object.assign(picker.style, {
+            position: 'fixed',
+            inset: 0,
+            zIndex: 2147483647,
+            cursor: 'crosshair',
+            background: 'transparent'
+        });
+
+        const guide = document.createElement('div');
+
+        Object.assign(guide.style, {
+            position: 'fixed',
+            top: '12px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '8px 12px',
+            background: '#e3f2fd',
+            border: '1px solid #90caf9',
+            color: '#0d47a1',
+            borderRadius: '5px',
+            font: 'bold 12px Arial',
+            pointerEvents: 'none'
+        });
+
+        guide.textContent =
+            'Di chuyển chuột và click để chọn vị trí — Esc để hủy';
+
+        picker.append(guide);
+
+        picker.onclick = e => {
+            e.preventDefault();
+
+            const x = e.clientX;
+            const y = e.clientY;
+
+            picker.remove();
+            picker = null;
+
+            marker?.remove();
+
+            marker = document.createElement('div');
+
+            Object.assign(marker.style, {
+                position: 'fixed',
+                left: `${x - 9}px`,
+                top: `${y - 9}px`,
+                width: '18px',
+                height: '18px',
+                border: '3px solid #1976d2',
+                borderRadius: '50%',
+                background: 'rgba(25,118,210,.2)',
+                zIndex: 2147483646,
+                pointerEvents: 'none'
+            });
+
+            document.body.append(marker);
+
+            chrome.runtime.sendMessage({
+                picked: { x, y }
+            });
+
+            if (panel) {
+                panel.querySelector('.coords').textContent =
+                    `Đã lưu: X ${x}, Y ${y}`;
+            }
+        };
+
+        document.body.append(picker);
+    }
+
+
+    // ==============================
+    // FLOATING PANEL
+    // ==============================
+
+    function showPanel() {
+        if (panel) {
+            panel.remove();
+            panel = null;
+            return;
+        }
+
+        panel = document.createElement('div');
+
+        panel.innerHTML = `
+            <b>Cổ Tiên Lộ Auto</b>
+
+            <button class="close">×</button>
+
+            <div class="panel-help">
+                Bảng nổi trên trang
+            </div>
+
+            <button class="choose">
+                Chọn vị trí click
+            </button>
+
+            <div class="coords">
+                Chưa chọn tọa độ
+            </div>
+        `;
+
+        Object.assign(panel.style, {
+            position: 'fixed',
+            top: '16px',
+            right: '16px',
+            width: '190px',
+            padding: '12px',
+            zIndex: 2147483646,
+            background: '#fff',
+            border: '1px solid #d7dce2',
+            borderRadius: '7px',
+            boxShadow: '0 3px 14px #0003',
+            font: '12px Arial',
+            color: '#17202a'
+        });
+
+        panel.querySelector('.close').onclick = () => {
+            panel.remove();
+            panel = null;
+        };
+
+        panel.querySelector('.choose').onclick = pick;
+
+        panel.querySelector('.close').style.cssText = `
+            float: right;
+            border: 0;
+            background: none;
+            font-size: 18px;
+            cursor: pointer;
+        `;
+
+        panel.querySelector('.choose').style.cssText = `
+            width: 100%;
+            padding: 7px;
+            margin: 8px 0;
+            border: 1px solid #1976d2;
+            border-radius: 4px;
+            background: #1976d2;
+            color: white;
+            cursor: pointer;
+        `;
+
+        panel.querySelector('.panel-help').style.cssText = `
+            color: #65707c;
+            margin-top: 8px;
+        `;
+
+        panel.querySelector('.coords').className = 'coords';
+
+        document.body.append(panel);
+    }
+
+
+    // ==============================
+    // TOAST NOTIFICATION
+    // ==============================
+
+    function toast(text, kind) {
+        let el = document.getElementById('ctl-auto-toast');
+
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'ctl-auto-toast';
+
+            document.documentElement.append(el);
+        }
+
+        el.textContent = `Cổ Tiên Lộ Auto: ${text}`;
+        el.className = kind;
+
+        clearTimeout(el._timer);
+
+        el._timer = setTimeout(() => {
+            el.remove();
+        }, 1800);
+    }
+
+
+    // ==============================
+    // KEYBOARD SHORTCUTS
+    // ==============================
+
+    document.addEventListener('keydown', e => {
+
+        // ESC: Stop automation and cancel picker
+        if (e.key === 'Escape') {
+            e.preventDefault();
+
+            stop();
+
+            picker?.remove();
+            picker = null;
+        }
+
+        // SHIFT: Toggle automation
+        if (e.key === 'Shift' && !e.repeat) {
+            e.preventDefault();
+
+            if (stopped) {
+                chrome.storage.local.get('config', r => {
+                    if (r.config) {
+                        run(r.config);
+                        toast('Đang chạy', 'running');
+                    }
+                });
+
+            } else {
+                stop();
+                toast('Đã dừng', 'stopped');
+            }
+        }
+    });
+
+
+    // ==============================
+    // MESSAGE LISTENER
+    // ==============================
+
+    chrome.runtime.onMessage.addListener(m => {
+
+        if (m.command === 'toggle-panel') {
+            showPanel();
+        }
+
+        if (m.command === 'start') {
+            run(m.config);
+            toast('Đang chạy', 'running');
+        }
+
+        if (m.command === 'stop') {
+            stop();
+            toast('Đã dừng', 'stopped');
+        }
+
+        if (m.command === 'toggle') {
+            if (stopped) {
+                run(m.config);
+                toast('Đang chạy', 'running');
+
+            } else {
+                stop();
+                toast('Đã dừng', 'stopped');
+            }
+        }
+
+        if (m.command === 'pick') {
+            pick();
+        }
+    });
+
 })();
