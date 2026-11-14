@@ -289,6 +289,29 @@
 
         picker.append(guide);
 
+        const cursor = document.createElement('div');
+        Object.assign(cursor.style, {
+            position: 'fixed', width: '18px', height: '18px',
+            border: '3px solid #1976d2', borderRadius: '50%',
+            background: 'rgba(25,118,210,.2)', zIndex: 1,
+            pointerEvents: 'none', transform: 'translate(-50%, -50%)'
+        });
+        const coords = document.createElement('div');
+        Object.assign(coords.style, {
+            position: 'fixed', top: '48px', left: '50%',
+            transform: 'translateX(-50%)', padding: '5px 9px',
+            background: '#fff', border: '1px solid #c8ced6',
+            borderRadius: '4px', color: '#17202a',
+            font: '12px Arial', pointerEvents: 'none', zIndex: 1
+        });
+        coords.textContent = 'X: --, Y: --';
+        picker.append(cursor, coords);
+        picker.onmousemove = e => {
+            cursor.style.left = `${e.clientX}px`;
+            cursor.style.top = `${e.clientY}px`;
+            coords.textContent = `X: ${e.clientX}, Y: ${e.clientY}`;
+        };
+
         picker.onclick = e => {
             e.preventDefault();
 
@@ -479,7 +502,10 @@
     // MESSAGE LISTENER
     // ==============================
 
-    chrome.runtime.onMessage.addListener(m => {
+        chrome.runtime.onMessage.addListener(m => {
+            if (m.command === 'picked-saved') {
+                toast('Đã lưu tọa độ thành công', 'running');
+            }
 
         if (m.command === 'toggle-panel') {
             showPanel();

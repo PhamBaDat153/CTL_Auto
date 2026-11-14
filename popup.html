@@ -37,6 +37,44 @@
     <button id="manage-profiles" hidden></button>
 </section>
 
+<div class="controls">
+
+    <div class="section-title">
+        <h2>Bảng điều khiển</h2>
+    </div>
+
+    <div class="main-buttons">
+        <button id="start">Bắt đầu</button>
+        <button id="stop">Dừng</button>
+    </div>
+
+    <fieldset style="margin-top: 10px;">
+        <legend>Lặp lại</legend>
+
+        <label>
+            Chế độ
+            <select id="loop-mode">
+                <option value="once">Một lần</option>
+                <option value="count">Số lần cố định</option>
+                <option value="infinite">Vô hạn</option>
+            </select>
+        </label>
+
+        <label id="count-wrap">
+            Số lần
+            <input
+                    id="loop-count"
+                    type="number"
+                    min="1"
+                    value="10"
+            >
+        </label>
+    </fieldset>
+
+</div>
+
+
+
 <section>
     <div class="section-title">
         <h2>Danh sách thao tác</h2>
@@ -51,37 +89,7 @@
     </div>
 </section>
 
-<fieldset>
-    <legend>Lặp lại</legend>
-
-    <label>
-        Chế độ
-        <select id="loop-mode">
-            <option value="once">Một lần</option>
-            <option value="count">Số lần cố định</option>
-            <option value="infinite">Vô hạn</option>
-        </select>
-    </label>
-
-    <label id="count-wrap">
-        Số lần
-        <input
-                id="loop-count"
-                type="number"
-                min="1"
-                value="10"
-        >
-    </label>
-</fieldset>
-
-<div class="controls">
-    <button id="save">Lưu cấu hình</button>
-
-    <div class="main-buttons">
-        <button id="start">Bắt đầu</button>
-        <button id="stop">Dừng</button>
-    </div>
-</div>
+<button id="save" class="save_button">Lưu cấu hình</button>
 
 <dialog id="profile-dialog">
     <h2>Quản lý cấu hình</h2>

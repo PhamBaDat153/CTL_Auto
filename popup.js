@@ -559,9 +559,11 @@ async function pick(event) {
 
     if (!tab?.id) return;
 
+    saveCurrent();
+    await saveProfiles();
     await chrome.storage.local.set({
-        config: config(),
-        pickingIndex: index
+        pickingIndex: index,
+        pickingProfileId: activeProfileId
     });
 
     try {
@@ -585,6 +587,7 @@ async function pick(event) {
             );
         }
     }
+    window.close();
 }
 
 

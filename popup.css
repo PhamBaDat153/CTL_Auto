@@ -96,6 +96,7 @@ h1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-top: 10px;
 }
 
 h2 {
@@ -249,18 +250,51 @@ button {
 
 .controls {
     display: block;
+    margin: 10px 0 0;
+    padding: 10px 0 0;
     border-top: 1px solid #d7dce2;
-    padding-top: 8px;
+    background: #e3f2fd;
+    border: 1px solid #90caf9;
+    border-radius: 7px;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(25, 118, 210, 0.12);
 }
 
-.controls > #save {
+.controls .section-title { margin-bottom: 8px; }
+
+.controls .section-title h2 { color: #0d47a1; }
+
+.save_button {
+    display: block;
     width: 100%;
-    margin-bottom: 6px;
+    min-height: 34px;
+    margin: 0 0 8px;
+    padding: 7px 10px;
+    border: 1px solid green;
+    border-radius: 5px;
+    background: green;
+    color: #fff;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+}
+
+.save_button:hover {
+    background: darkgreen;
+    border-color: darkgreen;
+}
+
+.save_button:active {
+    background: green;
+    border-color: green;
+    transform: translateY(1px);
 }
 
 .main-buttons {
     display: flex;
     gap: 6px;
+    width: 100%;
+    margin: 0 0 8px;
 }
 
 .main-buttons button {
@@ -290,7 +324,10 @@ fieldset {
     background: #fff;
     padding: 8px 10px;
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    gap: 7px;
+    width: 100%;
+    margin: 0 !important;
 }
 
 fieldset legend {
@@ -299,7 +336,16 @@ fieldset legend {
 }
 
 fieldset label {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 100%;
     margin: 1px 0;
+}
+
+.controls fieldset select,
+.controls fieldset input {
+    width: 100%;
 }
 
 /* ==============================
