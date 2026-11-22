@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -8,115 +7,259 @@
 </head>
 
 <body>
-<header>
-    <div class="brand"><img src="logo.png" alt="Logo Cổ Tiên Lộ Auto"><h1>Cổ Tiên Lộ Auto</h1></div>
-
-    <div id="status" class="status ready">
-        Sẵn sàng
+<header class="top">
+    <img src="logo.png" alt="" class="logo">
+    <div class="title">
+        <h1>Cổ Tiên Lộ Auto</h1>
+        <span class="sub">Shift: chạy/dừng · Esc: dừng</span>
     </div>
-
-    <p class="hint">
-        Thực hiện chuỗi thao tác theo thứ tự.
-        Nhấn <b>Esc</b> trên trang để dừng.
-    </p>
+    <span id="status" class="status ready">Sẵn sàng</span>
 </header>
 
-<section class="profiles">
-    <div class="section-title">
-        <h2>Cấu hình</h2>
-    </div>
-
-    <select id="profile-select"></select>
-
-    <div class="profile-actions">
-        <button id="rename-profile">✎ Đổi tên</button>
-        <button id="new-profile-top">＋ Tạo mới</button>
-        <button id="delete-profile-top">🗑 Xóa</button>
-    </div>
-
-    <button id="manage-profiles" hidden></button>
+<section class="profile-bar">
+    <select id="profile-select" title="Cấu hình đang dùng"></select>
+    <button class="icon" id="rename-profile" title="Đổi tên">✎</button>
+    <button class="icon" id="new-profile" title="Tạo cấu hình mới">＋</button>
+    <button class="icon" id="dup-profile" title="Nhân bản cấu hình">⧉</button>
+    <button class="icon danger" id="delete-profile" title="Xóa cấu hình">🗑</button>
 </section>
 
-<div class="controls">
+<nav class="tabs" role="tablist">
+    <button role="tab" data-mode="macro">Chuỗi thao tác</button>
+    <button role="tab" data-mode="fishing">🎣 Câu cá</button>
+</nav>
 
-    <div class="section-title">
-        <h2>Bảng điều khiển</h2>
-    </div>
-
-    <div class="main-buttons">
-        <button id="start">Bắt đầu</button>
-        <button id="stop">Dừng</button>
-    </div>
-
-    <fieldset style="margin-top: 10px;">
-        <legend>Lặp lại</legend>
-
-        <label>
-            Chế độ
-            <select id="loop-mode">
-                <option value="once">Một lần</option>
-                <option value="count">Số lần cố định</option>
-                <option value="infinite">Vô hạn</option>
-            </select>
-        </label>
-
-        <label id="count-wrap">
-            Số lần
-            <input
-                    id="loop-count"
-                    type="number"
-                    min="1"
-                    value="10"
-            >
-        </label>
-    </fieldset>
-
-</div>
-
-
-
-<section>
-    <div class="section-title">
-        <h2>Danh sách thao tác</h2>
-        <span id="action-count">0 thao tác</span>
-    </div>
-
-    <div id="actions"></div>
-
-    <div class="toolbar">
-        <button id="add-key">＋ Thêm phím</button>
-        <button id="add-mouse">＋ Thêm chuột</button>
-    </div>
-</section>
-
-<button id="save" class="save_button">Lưu cấu hình</button>
-
-<dialog id="profile-dialog">
-    <h2>Quản lý cấu hình</h2>
-
-    <div id="profile-list"></div>
-
-    <div class="rename-form" hidden>
-        <label>
-            Tên cấu hình
-            <input
-                    id="profile-name-input"
-                    maxlength="60"
-            >
-        </label>
-
-        <div>
-            <button id="cancel-rename">Hủy</button>
-            <button id="confirm-rename">Lưu tên</button>
+<main>
+    <!-- ========== CHUỖI THAO TÁC ========== -->
+    <section id="pane-macro" class="pane">
+        <div class="list-head">
+            <span id="action-count">0 thao tác</span>
+            <button class="link" id="toggle-all">Thu gọn tất cả</button>
         </div>
-    </div>
 
-    <div class="dialog-actions">
-        <button id="new-profile">＋ Tạo mới</button>
-        <button id="close-profiles">Đóng</button>
+        <div id="actions"></div>
+
+        <div id="empty" class="empty" hidden>
+            Chưa có thao tác nào. Thêm phím, click chuột hoặc khoảng chờ bên dưới.
+        </div>
+
+        <div class="add-row">
+            <button data-add="key">＋ Phím</button>
+            <button data-add="mouse">＋ Chuột</button>
+            <button data-add="wait">＋ Chờ</button>
+        </div>
+
+        <div class="group">
+            <div class="group-title">Lặp lại</div>
+            <div class="seg" id="loop-mode">
+                <button data-v="once">1 lần</button>
+                <button data-v="count">Số lần</button>
+                <button data-v="infinite">Vô hạn</button>
+            </div>
+            <label class="inline" id="count-wrap">
+                Số lần
+                <input id="loop-count" type="number" min="1" value="10">
+            </label>
+        </div>
+    </section>
+
+    <!-- ========== CÂU CÁ ========== -->
+    <section id="pane-fishing" class="pane" hidden>
+        <p class="note">
+            Đứng sát mép nước (hiện chữ «F · Câu cá») trước khi chạy.
+            Phím tắt trên trang: <b>Shift</b> chạy/dừng · <b>Esc</b> dừng · <b>Alt+S</b> chụp ảnh mẫu (cho nút 📷 vừa bấm).
+        </p>
+
+        <div class="step">
+            <div class="step-title"><span class="num">1</span>Thả câu</div>
+            <div class="row">
+                <label>Phím thả câu <input data-f="castKey" maxlength="20"></label>
+                <label>Chờ sau khi thả (giây) <input data-f="castWait" type="number" min="0" step="0.1"></label>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="num">2</span>Giật cần</div>
+            <div class="row">
+                <label>Giật khi
+                    <select data-f="hookMode">
+                        <option value="text">Chữ HTML trong vùng khớp</option>
+                        <option value="image">Hình trong vùng khớp ảnh mẫu</option>
+                        <option value="timed">Hẹn giờ (nhấn liên tục)</option>
+                    </select>
+                </label>
+            </div>
+
+            <div data-show="hookMode=text|image">
+                <div class="row">
+                    <div class="pick-box">
+                        <span class="coord" id="region-text">Chưa chọn vùng</span>
+                        <button class="pick" id="pick-hook-region">⬚ Chọn vùng</button>
+                    </div>
+                </div>
+                <div class="row" data-show="hookMode=text">
+                    <label>Chữ cần xuất hiện (không phân biệt dấu, hoa/thường)
+                        <input data-f="watchText" placeholder="Giật">
+                    </label>
+                </div>
+                <div class="row" data-show="hookMode=image">
+                    <div class="tpl">
+                        <div class="tpl-img" id="tpl-img">Chưa có ảnh mẫu</div>
+                        <div class="tpl-side">
+                            <button data-capture="hook">📷 Chụp mẫu</button>
+                            <span class="tiny">Trên trang, bấm <b>Alt+S</b> đúng lúc nút Giật đang sáng.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <label data-show="hookMode=image">Giống tối thiểu (%) <input data-f="threshold" type="number" min="50" max="100"></label>
+                    <label>Kiểm tra mỗi (ms) <input data-f="watchPoll" type="number" min="30" step="10"></label>
+                    <label>Chờ tối đa (giây) <input data-f="watchTimeout" type="number" min="1"></label>
+                </div>
+                <div class="sub-block">
+                    <div class="sub-title">Thả lại khi gặp vấn đề <span class="tiny">(kiểm tra lúc chờ cá cắn)</span></div>
+                    <div class="row">
+                        <label>Thả lại khi
+                            <select data-f="recastLogic">
+                                <option value="any">Bất kỳ điều kiện nào khớp</option>
+                                <option value="all">Tất cả điều kiện đều khớp</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="row">
+                        <label>Chưa kiểm tra trong (giây) sau khi thả câu
+                            <input data-f="recastGrace" type="number" min="0" step="0.5">
+                        </label>
+                    </div>
+                    <div id="recast-conds"></div>
+                    <p class="tiny" id="recast-empty">Chưa có điều kiện: chỉ thả lại khi hết thời gian chờ.</p>
+                    <div class="row">
+                        <button id="add-recast" class="wide dashed">＋ Thêm điều kiện thả lại</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <button data-test="hook" class="wide">🔍 Thử nhận diện 30 giây (không bấm)</button>
+                </div>
+            </div>
+
+            <p class="warn" data-show="hookMode=timed">
+                Game ghi: <i>giật sớm thì cá hoảng bỏ đi</i>. Nhấn liên tục theo giờ dễ làm hỏng lượt câu.
+            </p>
+
+            <div class="row">
+                <label>Giật bằng
+                    <select data-f="hookInput">
+                        <option value="key">Phím</option>
+                        <option value="mouse">Click chuột</option>
+                    </select>
+                </label>
+                <label data-show="hookInput=key">Phím <input data-f="hookKey" maxlength="20" placeholder="F hoặc Space"></label>
+            </div>
+            <div class="row" data-show="hookInput=mouse">
+                <div class="pick-box">
+                    <span class="coord" id="hook-coord">Chưa chọn</span>
+                    <button class="pick" data-pick-fishing="hook">⌖ Chọn nút Giật</button>
+                </div>
+            </div>
+            <div class="row" data-show="hookMode=timed">
+                <label>Nhấn mỗi (ms) <input data-f="hookInterval" type="number" min="30" step="10"></label>
+                <label>Liên tục trong (giây) <input data-f="hookDuration" type="number" min="0" step="0.5"></label>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="num">3</span>Kéo cá</div>
+            <div class="row">
+                <label>Bằng
+                    <select data-f="reelInput">
+                        <option value="key">Phím</option>
+                        <option value="mouse">Chuột</option>
+                    </select>
+                </label>
+                <label>Kiểu
+                    <select data-f="reelStyle">
+                        <option value="watch">Giữ, nhả khi vùng khớp</option>
+                        <option value="hold">Giữ liên tục</option>
+                        <option value="tap">Nhấp liên tục</option>
+                    </select>
+                </label>
+            </div>
+            <div class="row">
+                <label data-show="reelInput=key">Phím <input data-f="reelKey" maxlength="20" placeholder="Space hoặc R"></label>
+                <div class="pick-box" data-show="reelInput=mouse">
+                    <span class="coord" id="reel-coord">Chưa chọn</span>
+                    <button class="pick" data-pick-fishing="reel">⌖ Chọn vị trí kéo</button>
+                </div>
+            </div>
+
+            <div data-show="reelStyle=watch">
+                <div class="row">
+                    <label>Nhả dây khi
+                        <select data-f="reelLogic">
+                            <option value="any">Bất kỳ điều kiện nào khớp</option>
+                            <option value="all">Tất cả điều kiện đều khớp</option>
+                        </select>
+                    </label>
+                </div>
+                <div id="reel-conds"></div>
+                <div class="row">
+                    <button id="add-cond" class="wide dashed">＋ Thêm điều kiện</button>
+                    <button data-test="reel" class="wide">🔍 Thử 30 giây</button>
+                </div>
+            </div>
+
+            <div class="row">
+                <label data-show="reelStyle=tap">Nhấp mỗi (ms) <input data-f="reelInterval" type="number" min="30" step="10"></label>
+                <label>Chờ sau khi giật (ms) <input data-f="reelDelay" type="number" min="0" step="50"></label>
+                <label>Kéo tối đa (giây) <input data-f="reelDuration" type="number" min="0" step="0.5"></label>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="num">4</span>Lặp lại</div>
+            <div class="row">
+                <label>Số lần thả (0 = vô hạn) <input data-f="baits" type="number" min="0"></label>
+                <label>Nghỉ giữa các lần (giây) <input data-f="restWait" type="number" min="0" step="0.5"></label>
+            </div>
+            <div class="estimate" id="fish-estimate"></div>
+        </div>
+    </section>
+
+    <!-- ========== NÂNG CAO ========== -->
+    <details class="group advanced">
+        <summary>Tùy chọn chung</summary>
+        <div class="row">
+            <label>Dao động thời gian (±%)
+                <input data-c="jitter" type="number" min="0" max="50">
+            </label>
+            <label>Tự dừng sau (phút, 0 = tắt)
+                <input data-c="stopAfter" type="number" min="0" step="1">
+            </label>
+        </div>
+    </details>
+</main>
+
+<footer class="bottom">
+    <div id="message" class="message" hidden></div>
+    <div class="run">
+        <button id="start" class="primary">▶ Bắt đầu</button>
+        <button id="stop" class="stop">■ Dừng</button>
     </div>
+    <div class="saved" id="saved">Tự động lưu</div>
+</footer>
+
+<dialog id="name-dialog">
+    <form method="dialog">
+        <h2 id="name-title">Tên cấu hình</h2>
+        <input id="name-input" maxlength="60" autocomplete="off">
+        <div class="dialog-actions">
+            <button value="cancel" formnovalidate>Hủy</button>
+            <button value="ok" class="primary" id="name-ok">Lưu</button>
+        </div>
+    </form>
 </dialog>
 
+<script src="shared.js"></script>
 <script src="popup.js"></script>
 </body>
 </html>

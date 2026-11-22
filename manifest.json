@@ -1,15 +1,45 @@
 {
   "manifest_version": 3,
   "name": "Cổ Tiên Lộ Auto",
-  "version": "1.0.0",
-  "description": "Run configurable keyboard and mouse sequences on webpages.",
-  "icons": { "16": "logo.png", "32": "logo.png", "48": "logo.png", "128": "logo.png" },
-  "permissions": ["storage", "activeTab", "scripting"],
-  "action": { "default_popup": "popup.html", "default_title": "Mở Cổ Tiên Lộ Auto", "default_icon": { "16": "logo.png", "32": "logo.png", "48": "logo.png", "128": "logo.png" } },
-  "background": { "service_worker": "background.js" },
-  "content_scripts": [{
-    "matches": ["<all_urls>"],
-    "js": ["content.js"],
-    "run_at": "document_idle"
-  }]
+  "version": "1.5.0",
+  "description": "Auto click / chuỗi phím hẹn giờ, câu cá nhận diện chữ HTML hoặc ảnh mẫu để giật, kéo và thả lại.",
+  "icons": {
+    "16": "logo.png",
+    "32": "logo.png",
+    "48": "logo.png",
+    "128": "logo.png"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Mở Cổ Tiên Lộ Auto",
+    "default_icon": {
+      "16": "logo.png",
+      "32": "logo.png",
+      "48": "logo.png",
+      "128": "logo.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "shared.js",
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ]
 }
